@@ -54,9 +54,7 @@ public class EmployeeTest {
             FileUtils.deleteQuietly(new File(".data"));
         }
     }
-    /**
-     * This test evaluates whether the data is correctly generated
-     */
+   
     @Test
     public void NireProba() {
         assertTrue(true);
