@@ -63,4 +63,6 @@ public interface Serialiser<I> extends Serializable {
     default void setClassName(final String className) {
         // do nothing.
     }
+
+	
 }

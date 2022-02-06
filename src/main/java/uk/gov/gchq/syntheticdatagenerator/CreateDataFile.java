@@ -19,6 +19,8 @@ package uk.gov.gchq.syntheticdatagenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.gchq.syntheticdatagenerator.serialise.AvroSerialiser;
+import uk.gov.gchq.syntheticdatagenerator.serialise.JSONSerialiser;
+import uk.gov.gchq.syntheticdatagenerator.serialise.Serialiser;
 import uk.gov.gchq.syntheticdatagenerator.types.Employee;
 import uk.gov.gchq.syntheticdatagenerator.types.Teacher;
 import uk.gov.gchq.syntheticdatagenerator.types.Manager;
@@ -49,7 +51,7 @@ public final class CreateDataFile implements Callable<Boolean> {
     private final SecureRandom random;
     private final File outputFile;
     private final String ocupation;
-    private boolean isCSVFile = false;
+    private boolean isJSONFile = false;
 
     /**
      * @brief This method creates a data file
@@ -63,8 +65,8 @@ public final class CreateDataFile implements Callable<Boolean> {
         this.random = new SecureRandom(longToBytes(seed));
         this.outputFile = outputFile;
         this.ocupation = ocupation.toUpperCase();
-        if(getExtensionByGuava(outputFile).equals("csv")){isCSVFile = true;}
-        else{isCSVFile = false;}
+        if(getExtensionByGuava(outputFile).equals("json")){isJSONFile = true;}
+        else{isJSONFile = false;}
     }
 
     /**
@@ -79,7 +81,12 @@ public final class CreateDataFile implements Callable<Boolean> {
             }
         }
         try (OutputStream out = new FileOutputStream(outputFile)) {
+        	
+        	Stream<Teacher> teacherStream = null;
+        	Stream<Employee> employeeStream = null;
+        	
             if(ocupation.equals("E")){
+            	
                 AvroSerialiser<Employee> employeeAvroSerialiser = new AvroSerialiser<>(Employee.class);
 
                 // Need at least one Employee
@@ -87,49 +94,42 @@ public final class CreateDataFile implements Callable<Boolean> {
                 Manager[] managers = firstEmployee.getManager();
                 managers[0].setUid("Bob");
                 firstEmployee.setManager(managers);
-
                 // Create more employees if needed
-                Stream<Employee> employeeStream = Stream.of(firstEmployee);
+                employeeStream = Stream.of(firstEmployee);  
                 if (numberOfPeople > 1) {
-                    if(isCSVFile == false){
-                        employeeStream = Stream.concat(employeeStream, generateStreamOfEmployees());
-                    }
-                    else{
-                        Stream aux = Stream.of(";");
-                        employeeStream = Stream.concat(employeeStream, aux);
-                        employeeStream = Stream.concat(employeeStream, generateStreamOfEmployees());
-                    }
+                	employeeStream = Stream.concat(employeeStream, generateStreamOfEmployees());
                 }
-                // Serialise stream to output
-                employeeAvroSerialiser.serialise(employeeStream, out);
-                return true;
-
             }
             else if(ocupation.equals("T")){
-                AvroSerialiser<Teacher> teacherAvroSerialiser = new AvroSerialiser<>(Teacher.class);
-
                 // Need at least one Employee
                 Teacher firstTeacher = Teacher.generate(random);
                 Manager[] managers = firstTeacher.getManager();
                 managers[0].setUid("Peter");
                 firstTeacher.setManager(managers);
-
                 // Create more teachers if needed
-                Stream<Teacher> teacherStream = Stream.of(firstTeacher);
+                teacherStream = Stream.of(firstTeacher); 
                 if (numberOfPeople > 1) {
-                    if(isCSVFile == false){
-                        teacherStream = Stream.concat(teacherStream, generateStreamOfTeacher());
-                    }
-                    else{
-                        Stream aux = Stream.of(";");
-                        teacherStream = Stream.concat(teacherStream, aux);
-                        teacherStream = Stream.concat(teacherStream, generateStreamOfTeacher());
-                    }
+                	teacherStream = Stream.concat(teacherStream, generateStreamOfTeacher());
                 }
-
-                // Serialise stream to output
-                teacherAvroSerialiser.serialise(teacherStream, out);
-                return true;
+            }
+            
+            // Serialise stream to output
+            if(isJSONFile == true) {
+            	if(ocupation.equals("T")) {
+            		Serialiser<Teacher> teacherJSONSerialiser = new JSONSerialiser<>(Teacher.class);
+					teacherJSONSerialiser.serialise(teacherStream , out);
+            	} else if(ocupation.equals("E")) {
+            		Serialiser<Employee> employeeJSONSerialiser = new JSONSerialiser<>(Employee.class);
+					employeeJSONSerialiser.serialise(employeeStream , out);
+            	}
+            } else if(isJSONFile == false) {
+            	if(ocupation.equals("T")) {
+            		Serialiser<Teacher> teacherAvroSerialiser = new AvroSerialiser<>(Teacher.class);
+					teacherAvroSerialiser.serialise(teacherStream , out);
+            	} else if(ocupation.equals("E")) {
+            		Serialiser<Employee> employeeAvroSerialiser = new AvroSerialiser<>(Employee.class);
+					employeeAvroSerialiser.serialise(employeeStream , out);
+            	}
             }
             
             

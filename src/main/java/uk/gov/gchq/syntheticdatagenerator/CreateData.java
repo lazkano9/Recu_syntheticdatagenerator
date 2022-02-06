@@ -40,7 +40,7 @@ public final class CreateData {
     private static final int NUM_EMPLOYEES_ARG = 1;
     private static final int NUM_FILES_ARG = 2;
     private static final int NUM_THREADS_ARG = 3;
-    private static final int IS_CSV_OUT = 4;
+    private static final int IS_JSON_OUT = 4;
     private static final int OCUPATION = 5;
 
     private CreateData() {
@@ -72,9 +72,13 @@ public final class CreateData {
             CreateDataFile[] tasks = new CreateDataFile[numberOfFiles];
             long employeesPerFile = numberOfEmployees / numberOfFiles;
         
+            // IS_JSON_OUT = 1 JSON
+            // IS_JSON_OUT = 0 
+            
+            
             for (int i = 0; i < numberOfFiles; i++) {
-                if(args[IS_CSV_OUT].equals("1")){
-                    tasks[i] = new CreateDataFile(employeesPerFile, i, new File(outputFilePath + "/worker_" + job + i + ".csv"), job);
+                if(args[IS_JSON_OUT].equals("1")){
+                    tasks[i] = new CreateDataFile(employeesPerFile, i, new File(outputFilePath + "/worker_" + job + i + ".json"), job);
                 }
                 else{
                     tasks[i] = new CreateDataFile(employeesPerFile, i, new File(outputFilePath + "/worker_" + job + i + ".avro" ), job);
