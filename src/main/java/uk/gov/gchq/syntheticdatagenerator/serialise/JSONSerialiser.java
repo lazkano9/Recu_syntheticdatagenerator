@@ -50,7 +50,7 @@ public class JSONSerialiser<O> implements Serialiser<O>{
             //since we didn't create the output stream, we shouldn't close it either, someone else might want it afterwards!
             ObjectMapper mapper = new ObjectMapper();
             JsonFactory jfactory = new JsonFactory();
-	    JsonFactory jfactory2 = new JsonFactory();
+	    
             JsonGenerator jGenerator = jfactory.createJsonGenerator(output, JsonEncoding.UTF8);
             LOGGER.debug("Creating data file writer");
             try {
