@@ -73,7 +73,7 @@ public final class CreateData {
             long employeesPerFile = numberOfEmployees / numberOfFiles;
         
             // IS_JSON_OUT = 1 JSON
-            // IS_JSON_OUT = 0 
+            // IS_JSON_OUT = 0 AVRO
             
             
             for (int i = 0; i < numberOfFiles; i++) {
